@@ -18,7 +18,7 @@ afterEach(async () => {
   await mongoose.connection.close();
 });
 
-describe('POST /api/v1/users', () => {
+describe('[POST] /api/v1/users', () => {
   it('should insert a user', async () => {
     const res = await request(app).post('/api/v1/users').send({
       name: faker.name.fullName(),
@@ -38,7 +38,7 @@ describe('POST /api/v1/users', () => {
   });
 });
 
-describe('GET /api/v1/users', () => {
+describe('[GET] /api/v1/users', () => {
   it('should get all user', async () => {
     const res = await request(app).get('/api/v1/users');
 
@@ -53,7 +53,7 @@ describe('GET /api/v1/users', () => {
   });
 });
 
-describe('GET /api/v1/users/:id', () => {
+describe('[GET] /api/v1/users/:id', () => {
   it('should get single user', async () => {
     // get all data
     const getUser = await request(app).get('/api/v1/users');
@@ -86,7 +86,7 @@ describe('GET /api/v1/users/:id', () => {
   });
 });
 
-describe('PATCH /api/v1/users/:id', () => {
+describe('[PATCH] /api/v1/users/:id', () => {
   it('should update single user', async () => {
     const getUser = await request(app).get('/api/v1/users');
     const arrData = getUser.body.data;
@@ -116,7 +116,7 @@ describe('PATCH /api/v1/users/:id', () => {
   });
 });
 
-describe('DELETE /api/v1/users/:id', () => {
+describe('[DELETE] /api/v1/users/:id', () => {
   it('should delete user', async () => {
     const getUser = await request(app).get('/api/v1/users');
     const arrData = getUser.body.data;
