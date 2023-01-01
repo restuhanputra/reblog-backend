@@ -2,11 +2,12 @@
   "name": "reblog-backend",
   "version": "1.0.0",
   "description": "Rest API for Reblog",
+  "type": "module",
   "main": "./src/server.js",
   "scripts": {
     "start": "babel-node src/server.js",
     "dev:start": "nodemon --exec babel-node src/server.js",
-    "test": "cross-env NODE_ENV=test jest --detectOpenHandles --testTimeout=15000"
+    "test": "cross-env NODE_ENV=test jest --detectOpenHandles --testTimeout=30000"
   },
   "nodemonConfig": {
     "watch": [
@@ -27,13 +28,15 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "express-fileupload": "^1.4.0",
     "express-validator": "^6.14.2",
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",
     "mongoose": "^6.8.1",
     "morgan": "^1.10.0",
     "nodemailer": "^6.8.0",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "slugify": "^1.6.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.7",

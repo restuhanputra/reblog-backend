@@ -2,6 +2,8 @@ import dotenv from 'dotenv';
 import request from 'supertest';
 import mongoose from 'mongoose';
 import { faker } from '@faker-js/faker/locale/id_ID';
+import fs, { stat } from 'fs';
+import path from 'path';
 import config from '../src/config/index.js';
 import app from '../src/app.js';
 dotenv.config();
@@ -18,29 +20,37 @@ afterEach(async () => {
   await mongoose.connection.close();
 });
 
-describe('[POST] /api/v1/users', () => {
-  it('should insert a user', async () => {
-    const res = await request(app).post('/api/v1/users').send({
-      name: faker.name.fullName(),
-      username: faker.internet.userName().toLowerCase(),
-      email: faker.internet.email(),
-      password: '123456',
+describe('[POST] /api/v1/posts', () => {
+  it('should insert a post', async () => {
+    const imageFullPath = path.resolve('tests/testfile/profile.jpg');
+
+    fs.stat(imageFullPath, (err, stats) => {
+      if (err) {
+        console.log(err);
+      }
+      // console.log(stats);
     });
 
-    expect(res.status).toBe(201);
+    const res = await request(app)
+      .post('/api/v1/posts')
+      .field('title', faker.lorem.sentence())
+      .field('content', faker.lorem.paragraph())
+      .attach('image', imageFullPath);
+
+    expect(res.statusCode).toBe(201);
     expect(res.type).toBe('application/json');
     expect(res.body).toEqual(
       expect.objectContaining({
         success: true,
-        message: 'User created',
+        message: 'Post created',
       })
     );
   });
 });
 
-describe('[GET] /api/v1/users', () => {
-  it('should get all user', async () => {
-    const res = await request(app).get('/api/v1/users');
+describe('[GET] /api/v1/posts', () => {
+  it('should get all post', async () => {
+    const res = await request(app).get('/api/v1/posts');
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
@@ -53,11 +63,11 @@ describe('[GET] /api/v1/users', () => {
   });
 });
 
-describe('[GET] /api/v1/users/:id', () => {
-  it('should get single user', async () => {
+describe('[GET] /api/v1/posts/:id', () => {
+  it('should get single post', async () => {
     // get all data
-    const getUser = await request(app).get('/api/v1/users');
-    const arrData = getUser.body.data;
+    const getPosts = await request(app).get('/api/v1/posts');
+    const arrData = getPosts.body.data;
 
     // get the last id
     let id;
@@ -67,7 +77,7 @@ describe('[GET] /api/v1/users/:id', () => {
       }
     });
 
-    const res = await request(app).get(`/api/v1/users/${id}`);
+    const res = await request(app).get(`/api/v1/posts/${id}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
@@ -76,20 +86,24 @@ describe('[GET] /api/v1/users/:id', () => {
         success: true,
         data: expect.objectContaining({
           _id: expect.any(String),
-          name: expect.any(String),
-          username: expect.any(String),
-          email: expect.any(String),
-          role: expect.any(String),
+          title: expect.any(String),
+          slug: expect.any(String),
+          content: expect.any(String),
+          image: expect.any(String),
+          urlImage: expect.any(String),
+          status: expect.any(String),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
         }),
       })
     );
   });
 });
 
-describe('[PATCH] /api/v1/users/:id', () => {
-  it('should update single user', async () => {
-    const getUser = await request(app).get('/api/v1/users');
-    const arrData = getUser.body.data;
+describe('[PATCH] /api/v1/posts/:id', () => {
+  it('should update single post', async () => {
+    const getPosts = await request(app).get('/api/v1/posts');
+    const arrData = getPosts.body.data;
 
     let id;
     arrData.forEach((val, key, arr) => {
@@ -98,28 +112,36 @@ describe('[PATCH] /api/v1/users/:id', () => {
       }
     });
 
-    const res = await request(app).patch(`/api/v1/users/${id}`).send({
-      name: faker.name.fullName(),
-      username: faker.internet.userName().toLowerCase(),
-      email: faker.internet.email(),
-      password: '12345678',
+    const imageFullPath = path.resolve('tests/testfile/profile-updated.jpg');
+
+    fs.stat(imageFullPath, (err, stats) => {
+      if (err) {
+        console.log(err);
+      }
+      // console.log(stats);
     });
+
+    const res = await request(app)
+      .patch(`/api/v1/posts/${id}`)
+      .field('title', faker.lorem.sentence())
+      .field('content', faker.lorem.paragraph())
+      .attach('image', imageFullPath);
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
     expect(res.body).toEqual(
       expect.objectContaining({
         success: true,
-        message: 'User updated',
+        message: 'Post updated',
       })
     );
   });
 });
 
-describe('[DELETE] /api/v1/users/:id', () => {
-  it('should delete user', async () => {
-    const getUser = await request(app).get('/api/v1/users');
-    const arrData = getUser.body.data;
+describe('[DELETE] /api/v1/posts/:id', () => {
+  it('should delete post', async () => {
+    const getPosts = await request(app).get('/api/v1/posts');
+    const arrData = getPosts.body.data;
 
     let id;
     arrData.forEach((val, key, arr) => {
@@ -128,14 +150,14 @@ describe('[DELETE] /api/v1/users/:id', () => {
       }
     });
 
-    const res = await request(app).delete(`/api/v1/users/${id}`);
+    const res = await request(app).delete(`/api/v1/posts/${id}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
     expect(res.body).toEqual(
       expect.objectContaining({
         success: true,
-        message: 'User deleted',
+        message: 'Post deleted',
       })
     );
   });
@@ -144,10 +166,9 @@ describe('[DELETE] /api/v1/users/:id', () => {
 describe('Field validation', () => {
   it('should return error when field is empty', async () => {
     const res = await request(app).post('/api/v1/users').send({
-      name: '',
-      username: '',
-      email: '',
-      password: '',
+      title: '',
+      content: '',
+      image: '',
     });
 
     expect(res.statusCode).toBe(400);
@@ -160,28 +181,6 @@ describe('Field validation', () => {
           username: 'Username is required',
           email: 'Email is required',
           password: 'Password is required',
-        }),
-      })
-    );
-  });
-});
-
-describe('Email validation', () => {
-  it('should return error when email is not valid', async () => {
-    const res = await request(app).post('/api/v1/users').send({
-      name: faker.name.fullName(),
-      username: faker.internet.userName().toLowerCase(),
-      email: 'aaa.co',
-      password: faker.internet.password(),
-    });
-
-    expect(res.statusCode).toBe(400);
-    expect(res.type).toBe('application/json');
-    expect(res.body).toEqual(
-      expect.objectContaining({
-        success: false,
-        errors: expect.objectContaining({
-          email: 'Please provide a valid email',
         }),
       })
     );

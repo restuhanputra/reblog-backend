@@ -1,5 +1,5 @@
 import consola from 'consola';
-import app from './app';
+import app from './app.js';
 import connectDb from './database/connection.js';
 import config from './config/index.js';
 

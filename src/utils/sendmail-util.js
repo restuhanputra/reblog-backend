@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import config from '../config';
+import config from '../config/index.js';
 
 const sendMail = async (to, subject, text, html) => {
   try {
@@ -33,9 +33,7 @@ const sendMail = async (to, subject, text, html) => {
       html: html,
     };
 
-    // const result = await mailTransporter.sendMail(mailDetails);
     return await mailTransporter.sendMail(mailDetails);
-    // console.log('Email sent successfully: ', result);
   } catch (error) {
     console.log(error);
   }
