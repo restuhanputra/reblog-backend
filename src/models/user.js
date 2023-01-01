@@ -1,9 +1,13 @@
 import mongoose from 'mongoose';
-import { hash, compare } from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
+import bcryptjs from 'bcryptjs';
+import jsonwebtoken from 'jsonwebtoken';
 import { randomBytes } from 'crypto';
-import { pick } from 'lodash';
-import config from '../config';
+import lodash from 'lodash';
+import config from '../config/index.js';
+
+const { hash, compare } = bcryptjs;
+const { pick } = lodash;
+const { sign } = jsonwebtoken;
 
 const userSchema = new mongoose.Schema(
   {
@@ -103,4 +107,4 @@ userSchema.methods.getUserInfo = function () {
   return pick(this, ['_id', 'name', 'username', 'email', 'role', 'verified']);
 };
 
-module.exports = mongoose.model('User', userSchema);
+export default mongoose.model('User', userSchema);
