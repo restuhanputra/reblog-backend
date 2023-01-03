@@ -27,6 +27,13 @@ const postSchema = new mongoose.Schema(
       enum: ['draft', 'published'],
       default: 'draft',
     },
+    categoryId: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: true,
+      },
+    ],
   },
   {
     timestamps: true,
