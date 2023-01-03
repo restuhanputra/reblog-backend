@@ -31,11 +31,15 @@ describe('[POST] /api/v1/posts', () => {
       // console.log(stats);
     });
 
+    const getCategories = await request(app).get('/api/v1/categories');
+    const arrayCategories = getCategories.body.data.map((item) => item._id);
+
     const res = await request(app)
       .post('/api/v1/posts')
       .field('title', faker.lorem.sentence())
       .field('content', faker.lorem.paragraph())
-      .attach('image', imageFullPath);
+      .attach('image', imageFullPath)
+      .field('categoryId', arrayCategories);
 
     expect(res.statusCode).toBe(201);
     expect(res.type).toBe('application/json');
@@ -92,6 +96,7 @@ describe('[GET] /api/v1/posts/:id', () => {
           image: expect.any(String),
           urlImage: expect.any(String),
           status: expect.any(String),
+          categoryId: expect.any(Array),
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
         }),
@@ -121,11 +126,18 @@ describe('[PATCH] /api/v1/posts/:id', () => {
       // console.log(stats);
     });
 
+    const getCategories = await request(app).get('/api/v1/categories');
+    // get 2 categories id
+    const arrayCategories = getCategories.body.data
+      .slice(0, 2)
+      .map((item) => item._id);
+
     const res = await request(app)
       .patch(`/api/v1/posts/${id}`)
       .field('title', faker.lorem.sentence())
       .field('content', faker.lorem.paragraph())
-      .attach('image', imageFullPath);
+      .attach('image', imageFullPath)
+      .field('categoryId', arrayCategories);
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
@@ -177,10 +189,9 @@ describe('Field validation', () => {
       expect.objectContaining({
         success: false,
         errors: expect.objectContaining({
-          name: 'Name is required',
-          username: 'Username is required',
-          email: 'Email is required',
-          password: 'Password is required',
+          title: 'Title is required',
+          content: 'Username is required',
+          image: 'Image is required',
         }),
       })
     );
