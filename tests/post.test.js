@@ -177,11 +177,13 @@ describe('[DELETE] /api/v1/posts/:id', () => {
 
 describe('Field validation', () => {
   it('should return error when field is empty', async () => {
-    const res = await request(app).post('/api/v1/users').send({
-      title: '',
-      content: '',
-      image: '',
-    });
+    const emptyArray = [];
+    const res = await request(app)
+      .post('/api/v1/posts')
+      .field('title', '')
+      .field('content', '')
+      .attach('image', '')
+      .field('categoryId', []);
 
     expect(res.statusCode).toBe(400);
     expect(res.type).toBe('application/json');
@@ -190,8 +192,9 @@ describe('Field validation', () => {
         success: false,
         errors: expect.objectContaining({
           title: 'Title is required',
-          content: 'Username is required',
+          content: 'Content is required',
           image: 'Image is required',
+          categoryId: 'CategoryId is required',
         }),
       })
     );
