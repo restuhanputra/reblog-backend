@@ -11,7 +11,6 @@ const email = check('email')
   .withMessage('Please provide a valid email');
 const password = check('password', 'Password is required').isLength({ min: 6 });
 
-export const RegisterValidation = [name, username, email, password];
-export const UpdateValidation = [name, username, email, password];
-// export const AuthenticatedValidation = [username, password];
-// export const ResetPasswordValidation = [email];
+export const UserValidation = [name, username, email, password];
+export const LoginValidation = [username, password];
+export const ResetPasswordValidation = [email];
