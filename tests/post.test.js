@@ -8,15 +8,25 @@ import config from '../src/config/index.js';
 import app from '../src/app.js';
 dotenv.config();
 
+let token = '';
 beforeEach(async () => {
   mongoose.set('strictQuery', false);
   await mongoose.connect(config.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
+
+  //[POST] /api/auth
+  const response = await request(app).post('/api/v1/auth').send({
+    username: 'jensen.pacocha',
+    password: '123456',
+  });
+  token = response.body.token;
 });
 
 afterEach(async () => {
+  // [DELETE] /api/auth
+  await request(app).delete('/api/v1/auth');
   await mongoose.connection.close();
 });
 
@@ -31,7 +41,9 @@ describe('[POST] /api/v1/posts', () => {
       // console.log(stats);
     });
 
-    const getCategories = await request(app).get('/api/v1/categories');
+    const getCategories = await request(app)
+      .get('/api/v1/categories')
+      .set('Authorization', `${token}`);
     const arrayCategories = getCategories.body.data.map((item) => item._id);
 
     const res = await request(app)
@@ -39,7 +51,8 @@ describe('[POST] /api/v1/posts', () => {
       .field('title', faker.lorem.sentence())
       .field('content', faker.lorem.paragraph())
       .attach('image', imageFullPath)
-      .field('categoryId', arrayCategories);
+      .field('categoryId', arrayCategories)
+      .set('Authorization', `${token}`);
 
     expect(res.statusCode).toBe(201);
     expect(res.type).toBe('application/json');
@@ -54,7 +67,9 @@ describe('[POST] /api/v1/posts', () => {
 
 describe('[GET] /api/v1/posts', () => {
   it('should get all post', async () => {
-    const res = await request(app).get('/api/v1/posts');
+    const res = await request(app)
+      .get('/api/v1/posts')
+      .set('Authorization', `${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
@@ -70,7 +85,9 @@ describe('[GET] /api/v1/posts', () => {
 describe('[GET] /api/v1/posts/:id', () => {
   it('should get single post', async () => {
     // get all data
-    const getPosts = await request(app).get('/api/v1/posts');
+    const getPosts = await request(app)
+      .get('/api/v1/posts')
+      .set('Authorization', `${token}`);
     const arrData = getPosts.body.data;
 
     // get the last id
@@ -81,7 +98,9 @@ describe('[GET] /api/v1/posts/:id', () => {
       }
     });
 
-    const res = await request(app).get(`/api/v1/posts/${id}`);
+    const res = await request(app)
+      .get(`/api/v1/posts/${id}`)
+      .set('Authorization', `${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
@@ -107,7 +126,9 @@ describe('[GET] /api/v1/posts/:id', () => {
 
 describe('[PATCH] /api/v1/posts/:id', () => {
   it('should update single post', async () => {
-    const getPosts = await request(app).get('/api/v1/posts');
+    const getPosts = await request(app)
+      .get('/api/v1/posts')
+      .set('Authorization', `${token}`);
     const arrData = getPosts.body.data;
 
     let id;
@@ -126,7 +147,9 @@ describe('[PATCH] /api/v1/posts/:id', () => {
       // console.log(stats);
     });
 
-    const getCategories = await request(app).get('/api/v1/categories');
+    const getCategories = await request(app)
+      .get('/api/v1/categories')
+      .set('Authorization', `${token}`);
     // get 2 categories id
     const arrayCategories = getCategories.body.data
       .slice(0, 2)
@@ -137,7 +160,8 @@ describe('[PATCH] /api/v1/posts/:id', () => {
       .field('title', faker.lorem.sentence())
       .field('content', faker.lorem.paragraph())
       .attach('image', imageFullPath)
-      .field('categoryId', arrayCategories);
+      .field('categoryId', arrayCategories)
+      .set('Authorization', `${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
@@ -152,7 +176,9 @@ describe('[PATCH] /api/v1/posts/:id', () => {
 
 describe('[DELETE] /api/v1/posts/:id', () => {
   it('should delete post', async () => {
-    const getPosts = await request(app).get('/api/v1/posts');
+    const getPosts = await request(app)
+      .get('/api/v1/posts')
+      .set('Authorization', `${token}`);
     const arrData = getPosts.body.data;
 
     let id;
@@ -162,7 +188,9 @@ describe('[DELETE] /api/v1/posts/:id', () => {
       }
     });
 
-    const res = await request(app).delete(`/api/v1/posts/${id}`);
+    const res = await request(app)
+      .delete(`/api/v1/posts/${id}`)
+      .set('Authorization', `${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
@@ -177,13 +205,13 @@ describe('[DELETE] /api/v1/posts/:id', () => {
 
 describe('Field validation', () => {
   it('should return error when field is empty', async () => {
-    const emptyArray = [];
     const res = await request(app)
       .post('/api/v1/posts')
       .field('title', '')
       .field('content', '')
       .attach('image', '')
-      .field('categoryId', []);
+      .field('categoryId', [''])
+      .set('Authorization', `${token}`);
 
     expect(res.statusCode).toBe(400);
     expect(res.type).toBe('application/json');

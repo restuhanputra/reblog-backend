@@ -5,26 +5,37 @@ import { faker } from '@faker-js/faker/locale/id_ID';
 import config from '../src/config/index.js';
 import app from '../src/app.js';
 dotenv.config();
-
+let token = '';
 beforeEach(async () => {
   mongoose.set('strictQuery', false);
   await mongoose.connect(config.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
+
+  //[POST] /api/auth
+  const response = await request(app).post('/api/v1/auth').send({
+    username: 'jensen.pacocha',
+    password: '123456',
+  });
+  token = response.body.token;
 });
 
 afterEach(async () => {
+  // [DELETE] /api/auth
+  await request(app).delete('/api/v1/auth');
+
   await mongoose.connection.close();
 });
 
 describe('[POST] /api/v1/categories', () => {
   it('should insert a category', async () => {
-    console.log('category name: ', faker.name.jobArea());
-
-    const res = await request(app).post('/api/v1/categories').send({
-      name: faker.name.jobArea(),
-    });
+    const res = await request(app)
+      .post('/api/v1/categories')
+      .send({
+        name: faker.name.jobArea(),
+      })
+      .set('Authorization', `${token}`);
 
     expect(res.status).toBe(201);
     expect(res.type).toBe('application/json');
@@ -39,7 +50,9 @@ describe('[POST] /api/v1/categories', () => {
 
 describe('[GET] /api/v1/categories', () => {
   it('should get all category', async () => {
-    const res = await request(app).get('/api/v1/categories');
+    const res = await request(app)
+      .get('/api/v1/categories')
+      .set('Authorization', `${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
@@ -55,7 +68,9 @@ describe('[GET] /api/v1/categories', () => {
 describe('[GET] /api/v1/categories/:id', () => {
   it('should get single category', async () => {
     // get all data
-    const getCategories = await request(app).get('/api/v1/categories');
+    const getCategories = await request(app)
+      .get('/api/v1/categories')
+      .set('Authorization', `${token}`);
     const arrData = getCategories.body.data;
 
     // get the last id
@@ -66,7 +81,9 @@ describe('[GET] /api/v1/categories/:id', () => {
       }
     });
 
-    const res = await request(app).get(`/api/v1/categories/${id}`);
+    const res = await request(app)
+      .get(`/api/v1/categories/${id}`)
+      .set('Authorization', `${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
@@ -86,7 +103,9 @@ describe('[GET] /api/v1/categories/:id', () => {
 
 describe('[PATCH] /api/v1/categories/:id', () => {
   it('should update single category', async () => {
-    const getCategories = await request(app).get('/api/v1/categories');
+    const getCategories = await request(app)
+      .get('/api/v1/categories')
+      .set('Authorization', `${token}`);
     const arrData = getCategories.body.data;
 
     let id;
@@ -96,9 +115,12 @@ describe('[PATCH] /api/v1/categories/:id', () => {
       }
     });
 
-    const res = await request(app).patch(`/api/v1/categories/${id}`).send({
-      name: faker.name.jobArea(),
-    });
+    const res = await request(app)
+      .patch(`/api/v1/categories/${id}`)
+      .send({
+        name: faker.name.jobArea(),
+      })
+      .set('Authorization', `${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
@@ -113,7 +135,9 @@ describe('[PATCH] /api/v1/categories/:id', () => {
 
 describe('[DELETE] /api/v1/categories/:id', () => {
   it('should delete category', async () => {
-    const getCategories = await request(app).get('/api/v1/categories');
+    const getCategories = await request(app)
+      .get('/api/v1/categories')
+      .set('Authorization', `${token}`);
     const arrData = getCategories.body.data;
 
     let id;
@@ -123,7 +147,9 @@ describe('[DELETE] /api/v1/categories/:id', () => {
       }
     });
 
-    const res = await request(app).delete(`/api/v1/categories/${id}`);
+    const res = await request(app)
+      .delete(`/api/v1/categories/${id}`)
+      .set('Authorization', `${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.type).toBe('application/json');
@@ -138,9 +164,12 @@ describe('[DELETE] /api/v1/categories/:id', () => {
 
 describe('Field validation', () => {
   it('should return error when field is empty', async () => {
-    const res = await request(app).post('/api/v1/categories').send({
-      name: '',
-    });
+    const res = await request(app)
+      .post('/api/v1/categories')
+      .send({
+        name: '',
+      })
+      .set('Authorization', `${token}`);
 
     expect(res.statusCode).toBe(400);
     expect(res.type).toBe('application/json');
