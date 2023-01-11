@@ -1,13 +1,12 @@
 import mongoose from 'mongoose';
 import bcryptjs from 'bcryptjs';
-import jsonwebtoken from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { randomBytes } from 'crypto';
 import lodash from 'lodash';
 import config from '../config/index.js';
 
 const { hash, compare } = bcryptjs;
 const { pick } = lodash;
-const { sign } = jsonwebtoken;
 
 const userSchema = new mongoose.Schema(
   {
@@ -82,12 +81,12 @@ userSchema.methods.comparePassword = async function (password) {
  */
 userSchema.methods.generateJWT = async function () {
   let payload = {
-    username: this.username,
-    email: this.email,
-    name: this.name,
+    role: this.role,
     id: this._id,
   };
-  return await sign(payload, config.SECRET, { expiresIn: '1d' });
+  return await jwt.sign(payload, config.JWT.SECRET, {
+    expiresIn: config.JWT.EXPIRES_IN,
+  });
 };
 
 /**
